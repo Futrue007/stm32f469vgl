@@ -169,7 +169,7 @@ int main(void)
     BSP_LCD_SetBackColor(LCD_COLOR_BLACK);
 
 
-	printf("LCD Init finished\r\b");
+	printf("LCD Init finished\r\n");
 
 	lv_init();
 	tft_init();
@@ -255,7 +255,8 @@ static void SystemClock_Config(void)
   ret = HAL_PWREx_EnableOverDrive();
   if(ret != HAL_OK)
   {
-    while(1) { ; }
+	OnError_Handler(1);
+	while(1) { ; }
   }
   
   /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 clocks dividers */
@@ -268,7 +269,8 @@ static void SystemClock_Config(void)
   ret = HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5);
   if(ret != HAL_OK)
   {
-    while(1) { ; }
+	OnError_Handler(1);
+	while(1) { ; }
   }
 }
 

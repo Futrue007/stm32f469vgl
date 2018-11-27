@@ -184,6 +184,7 @@ uint8_t BSP_TS_ITConfig(void);
 /* These __weak function can be surcharged by application code in case the current settings
    need to be changed for specific (example GPIO allocation) */
 void BSP_TS_INT_MspInit(void);
+void touchpad_init(void);
 
 /**
   * @}
