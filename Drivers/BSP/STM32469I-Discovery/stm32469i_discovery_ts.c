@@ -72,7 +72,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32469i_discovery_ts.h"
 
-#include "lvgl/lv_hal/lv_hal.h"
+#include "lv_hal.h"
 /** @addtogroup BSP
   * @{
   */

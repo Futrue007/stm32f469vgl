@@ -47,7 +47,7 @@
             <NotGenerated>0</NotGenerated>
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
-          <OutputDirectory>.\</OutputDirectory>
+          <OutputDirectory>.\stm32f469_display\</OutputDirectory>
           <OutputName>stm32f469_dispaly</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
@@ -332,10 +332,10 @@
             <v6WtE>0</v6WtE>
             <v6Rtti>0</v6Rtti>
             <VariousControls>
-              <MiscControls>--C99</MiscControls>
-              <Define>USE_HAL_DRIVER,STM32F469xx,</Define>
+              <MiscControls>--C99 --gnu</MiscControls>
+              <Define>USE_HAL_DRIVER,STM32F469xx,LV_CONF_INCLUDE_SIMPLE</Define>
               <Undefine></Undefine>
-              <IncludePath>..\Inc;..\Drivers\CMSIS\Device\ST\STM32F4xx\Include;..\Drivers\CMSIS\Include;..\Drivers\STM32F4xx_HAL_Driver\Inc;..\Drivers\BSP\STM32469I-Discovery;..\Drivers\BSP\Components\Common;..\Utilities\Log;..\Utilities\Fonts;..\Utilities\CPU;..\GUI;..\GUI\lvgl;..\GUI\lv_examples</IncludePath>
+              <IncludePath>..\Inc;..\Drivers\CMSIS\Device\ST\STM32F4xx\Include;..\Drivers\CMSIS\Include;..\Drivers\STM32F4xx_HAL_Driver\Inc;..\Drivers\BSP\STM32469I-Discovery;..\Drivers\BSP\Components\Common;..\Utilities\Log;..\Utilities\Fonts;..\Utilities\CPU;..\GUI\lvgl;..\GUI\lv_examples;..\GUI\lv_examples\lv_apps\demo;..\GUI\lvgl\lv_core;..\GUI\lvgl\lv_draw;..\GUI\lvgl\lv_fonts;..\GUI\lvgl\lv_hal;..\GUI\lvgl\lv_misc;..\GUI\lvgl\lv_objx;..\GUI\lvgl\lv_themes;..\GUI\lv_examples\lv_tests\lv_test_theme</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -587,6 +587,81 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>lvgl_misc</GroupName>
+          <Files>
+            <File>
+              <FileName>lv_anim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_misc\lv_anim.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_mem.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_misc\lv_mem.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_area.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_misc\lv_area.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_circ.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_misc\lv_circ.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_color.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_misc\lv_color.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_font.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_misc\lv_font.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_fs.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_misc\lv_fs.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_ll.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_misc\lv_ll.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_log.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_misc\lv_log.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_math.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_misc\lv_math.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_misc\lv_task.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_templ.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_misc\lv_templ.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_txt.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_misc\lv_txt.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_ufs.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_misc\lv_ufs.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>lvgl_core</GroupName>
           <Files>
             <File>
@@ -630,9 +705,39 @@
               <FilePath>..\GUI\lvgl\lv_draw\lv_draw.c</FilePath>
             </File>
             <File>
+              <FileName>lv_draw_arc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_draw\lv_draw_arc.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_draw_img.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_draw\lv_draw_img.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_draw_label.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_draw\lv_draw_label.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_draw_line.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_draw\lv_draw_line.c</FilePath>
+            </File>
+            <File>
               <FileName>lv_draw_rbasic.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\GUI\lvgl\lv_draw\lv_draw_rbasic.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_draw_rect.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_draw\lv_draw_rect.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_draw_triangle.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_draw\lv_draw_triangle.c</FilePath>
             </File>
             <File>
               <FileName>lv_draw_vbasic.c</FileName>
@@ -642,78 +747,13 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>lvfl_misc</GroupName>
-          <Files>
-            <File>
-              <FileName>lv_anim.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_anim.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_area.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_area.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_circ.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_circ.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_color.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_color.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_font.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_font.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_fs.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fs.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_ll.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_ll.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_mem.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_mem.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_templ.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_templ.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_trigo.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_trigo.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_txt.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_txt.c</FilePath>
-            </File>
-            <File>
-              <FileName>lv_ufs.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_ufs.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>lvgl_objx</GroupName>
           <Files>
+            <File>
+              <FileName>lv_arc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_objx\lv_arc.c</FilePath>
+            </File>
             <File>
               <FileName>lv_bar.c</FileName>
               <FileType>1</FileType>
@@ -728,6 +768,11 @@
               <FileName>lv_btnm.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\GUI\lvgl\lv_objx\lv_btnm.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_calendar.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_objx\lv_calendar.c</FilePath>
             </File>
             <File>
               <FileName>lv_cb.c</FileName>
@@ -758,6 +803,11 @@
               <FileName>lv_img.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\GUI\lvgl\lv_objx\lv_img.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_imgbtn.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_objx\lv_imgbtn.c</FilePath>
             </File>
             <File>
               <FileName>lv_kb.c</FileName>
@@ -803,6 +853,11 @@
               <FileName>lv_page.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\GUI\lvgl\lv_objx\lv_page.c</FilePath>
+            </File>
+            <File>
+              <FileName>lv_preload.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_objx\lv_preload.c</FilePath>
             </File>
             <File>
               <FileName>lv_roller.c</FileName>
@@ -865,6 +920,11 @@
               <FilePath>..\GUI\lvgl\lv_themes\lv_theme_mono.c</FilePath>
             </File>
             <File>
+              <FileName>lv_theme_nemo.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\GUI\lvgl\lv_themes\lv_theme_nemo.c</FilePath>
+            </File>
+            <File>
               <FileName>lv_theme_night.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\GUI\lvgl\lv_themes\lv_theme_night.c</FilePath>
@@ -905,244 +965,94 @@
           <GroupName>lvgl_font</GroupName>
           <Files>
             <File>
-              <FileName>dejavu_10.c</FileName>
+              <FileName>lv_font_builtin.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_10.c</FilePath>
+              <FilePath>..\GUI\lvgl\lv_fonts\lv_font_builtin.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_10_cyrillic.c</FileName>
+              <FileName>lv_font_dejavu_10.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_10_cyrillic.c</FilePath>
+              <FilePath>..\GUI\lvgl\lv_fonts\lv_font_dejavu_10.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_10_latin_ext_a.c</FileName>
+              <FileName>lv_font_dejavu_10_cyrillic.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_10_latin_ext_a.c</FilePath>
+              <FilePath>..\GUI\lvgl\lv_fonts\lv_font_dejavu_10_cyrillic.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_10_latin_ext_b.c</FileName>
+              <FileName>lv_font_dejavu_10_latin_sup.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_10_latin_ext_b.c</FilePath>
+              <FilePath>..\GUI\lvgl\lv_fonts\lv_font_dejavu_10_latin_sup.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_10_sup.c</FileName>
+              <FileName>lv_font_dejavu_20.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_10_sup.c</FilePath>
+              <FilePath>..\GUI\lvgl\lv_fonts\lv_font_dejavu_20.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_20.c</FileName>
+              <FileName>lv_font_dejavu_20_cyrillic.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_20.c</FilePath>
+              <FilePath>..\GUI\lvgl\lv_fonts\lv_font_dejavu_20_cyrillic.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_20_cyrillic.c</FileName>
+              <FileName>lv_font_dejavu_20_latin_sup.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_20_cyrillic.c</FilePath>
+              <FilePath>..\GUI\lvgl\lv_fonts\lv_font_dejavu_20_latin_sup.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_20_latin_ext_a.c</FileName>
+              <FileName>lv_font_dejavu_30.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_20_latin_ext_a.c</FilePath>
+              <FilePath>..\GUI\lvgl\lv_fonts\lv_font_dejavu_30.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_20_latin_ext_b.c</FileName>
+              <FileName>lv_font_dejavu_30_cyrillic.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_20_latin_ext_b.c</FilePath>
+              <FilePath>..\GUI\lvgl\lv_fonts\lv_font_dejavu_30_cyrillic.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_20_sup.c</FileName>
+              <FileName>lv_font_dejavu_30_latin_sup.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_20_sup.c</FilePath>
+              <FilePath>..\GUI\lvgl\lv_fonts\lv_font_dejavu_30_latin_sup.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_30.c</FileName>
+              <FileName>lv_font_dejavu_40.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_30.c</FilePath>
+              <FilePath>..\GUI\lvgl\lv_fonts\lv_font_dejavu_40.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_30_cyrillic.c</FileName>
+              <FileName>lv_font_dejavu_40_cyrillic.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_30_cyrillic.c</FilePath>
+              <FilePath>..\GUI\lvgl\lv_fonts\lv_font_dejavu_40_cyrillic.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_30_latin_ext_a.c</FileName>
+              <FileName>lv_font_dejavu_40_latin_sup.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_30_latin_ext_a.c</FilePath>
+              <FilePath>..\GUI\lvgl\lv_fonts\lv_font_dejavu_40_latin_sup.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_30_latin_ext_b.c</FileName>
+              <FileName>lv_font_monospace_8.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_30_latin_ext_b.c</FilePath>
+              <FilePath>..\GUI\lvgl\lv_fonts\lv_font_monospace_8.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_30_sup.c</FileName>
+              <FileName>lv_font_symbol_10.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_30_sup.c</FilePath>
+              <FilePath>..\GUI\lvgl\lv_fonts\lv_font_symbol_10.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_40.c</FileName>
+              <FileName>lv_font_symbol_20.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_40.c</FilePath>
+              <FilePath>..\GUI\lvgl\lv_fonts\lv_font_symbol_20.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_40_cyrillic.c</FileName>
+              <FileName>lv_font_symbol_30.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_40_cyrillic.c</FilePath>
+              <FilePath>..\GUI\lvgl\lv_fonts\lv_font_symbol_30.c</FilePath>
             </File>
             <File>
-              <FileName>dejavu_40_latin_ext_a.c</FileName>
+              <FileName>lv_font_symbol_40.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_40_latin_ext_a.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_40_latin_ext_b.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_40_latin_ext_b.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_40_sup.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_40_sup.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_60.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_60.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_60_cyrillic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_60_cyrillic.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_60_latin_ext_a.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_60_latin_ext_a.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_60_latin_ext_b.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_60_latin_ext_b.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_60_sup.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_60_sup.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_80.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_80.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_80_cyrillic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_80_cyrillic.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_80_latin_ext_a.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_80_latin_ext_a.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_80_latin_ext_b.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_80_latin_ext_b.c</FilePath>
-            </File>
-            <File>
-              <FileName>dejavu_80_sup.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\dejavu_80_sup.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_10_basic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\symbol_10_basic.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_10_feedback.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\symbol_10_feedback.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_10_file.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\symbol_10_file.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_20_basic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\symbol_20_basic.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_20_feedback.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\symbol_20_feedback.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_20_file.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\symbol_20_file.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_30_basic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\symbol_30_basic.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_30_feedback.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\symbol_30_feedback.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_30_file.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\symbol_30_file.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_40_basic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\symbol_40_basic.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_40_feedback.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\symbol_40_feedback.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_40_file.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\symbol_40_file.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_60_basic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\symbol_60_basic.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_60_feedback.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\symbol_60_feedback.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_60_file.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\symbol_60_file.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_80_basic.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\symbol_80_basic.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_80_feedback.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\symbol_80_feedback.c</FilePath>
-            </File>
-            <File>
-              <FileName>symbol_80_file.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\GUI\lvgl\lv_misc\lv_fonts\symbol_80_file.c</FilePath>
+              <FilePath>..\GUI\lvgl\lv_fonts\lv_font_symbol_40.c</FilePath>
             </File>
           </Files>
         </Group>

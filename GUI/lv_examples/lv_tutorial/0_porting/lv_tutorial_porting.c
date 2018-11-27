@@ -28,7 +28,7 @@
  * It is possible to draw directly to a frame buffer when the internal buffering is disabled (LV_VDB_SIZE = 0).
  * Keep in mind this way during refresh some artifacts can be visible because the layers are drawn after each other.
  * And some high level graphics features like anti aliasing, opacity or shadows aren't available in this configuration.
- * In this mode two finctions are required:  fill and area with a color AND write a color array to an area
+ * In this mode two functions are required:  fill and area with a color AND write a color array to an area
  *
  * HARDWARE ACCELERATION (GPU)
  * If your MCU supports graphical acceleration (GPU) then you can use it with two interface functions:
@@ -40,7 +40,7 @@
  *      INCLUDES
  *********************/
 #include "lv_tutorial_porting.h"
-#include "lvgl/lvgl.h"
+#if  USE_LV_TUTORIALS
 
 /*********************
  *      DEFINES
@@ -60,7 +60,7 @@ static void ex_disp_fill(int32_t x1, int32_t y1, int32_t x2, int32_t y2,  lv_col
 static void ex_mem_blend(lv_color_t * dest, const lv_color_t * src, uint32_t length, lv_opa_t opa);
 static void ex_mem_fill(lv_color_t * dest, uint32_t length, lv_color_t color);
 #endif
-static bool ex_tp_read(lv_indev_data_t *data);
+static bool ex_tp_read(lv_indev_data_t * data);
 
 /**********************
  *  STATIC VARIABLES
@@ -130,6 +130,16 @@ void lv_turorial_porting(void)
     indev_drv.read = ex_tp_read;                 /*Library ready your touchpad via this function*/
     lv_indev_drv_register(&indev_drv);              /*Finally register the driver*/
 
+
+    /*************************************
+     * Run the task handler of LittlevGL
+     *************************************/
+    while(1) {
+        /* Periodically call this function.
+         * The timing is not critical but should be between 1..10 ms */
+        lv_task_handler();
+        /*delay_ms(5)*/
+    }
 }
 
 /**********************
@@ -192,6 +202,8 @@ static void ex_disp_fill(int32_t x1, int32_t y1, int32_t x2, int32_t y2,  lv_col
             /* put_px(x, y, *color)*/
         }
     }
+
+    (void)color; /*Just to avid warnings*/
 }
 
 #if USE_LV_GPU
@@ -202,7 +214,7 @@ static void ex_mem_blend(lv_color_t * dest, const lv_color_t * src, uint32_t len
 {
     /*It's an example code which should be done by your GPU*/
 
-    int32_t i;
+    uint32_t i;
     for(i = 0; i < length; i++) {
         dest[i] = lv_color_mix(dest[i], src[i], opa);
     }
@@ -214,7 +226,7 @@ static void ex_mem_fill(lv_color_t * dest, uint32_t length, lv_color_t color)
 {
     /*It's an example code which should be done by your GPU*/
 
-    int32_t i;
+    uint32_t i;
     for(i = 0; i < length; i++) {
         dest[i] = color;
     }
@@ -223,14 +235,19 @@ static void ex_mem_fill(lv_color_t * dest, uint32_t length, lv_color_t color)
 #endif
 
 /* Read the touchpad and store it in 'data'
- * REaturn false if no more data read; true for ready again */
-static bool ex_tp_read(lv_indev_data_t *data)
+ * Return false if no more data read; true for ready again */
+static bool ex_tp_read(lv_indev_data_t * data)
 {
     /* Read your touchpad */
     /* data->state = LV_INDEV_STATE_REL or LV_INDEV_STATE_PR */
     /* data->point.x = tp_x; */
     /* data->point.y = tp_y; */
+    
+    /*In LV_INDEV_STATE_REL state you should use the last pressed coordinates*/
+
+    (void)data; /*Just to avid warnings*/
 
     return false;   /*false: no more data to read because we are no buffering*/
 }
 
+#endif /*USE_LV_TUTORIALS*/

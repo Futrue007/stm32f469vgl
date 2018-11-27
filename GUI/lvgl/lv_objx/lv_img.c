@@ -1,20 +1,24 @@
 /**
  * @file lv_img.c
- * 
+ *
  */
 
 /*********************
  *      INCLUDES
  *********************/
-#include "../../lv_conf.h"
+#include "lv_img.h"
 #if USE_LV_IMG != 0
 
-#include "lv_img.h"
-#include "../lv_draw/lv_draw.h"
+/*Testing of dependencies*/
+#if USE_LV_LABEL == 0
+#error "lv_img: lv_label is required. Enable it in lv_conf.h (USE_LV_LABEL  1) "
+#endif
+
 #include "../lv_themes/lv_theme.h"
 #include "../lv_misc/lv_fs.h"
 #include "../lv_misc/lv_ufs.h"
 #include "../lv_misc/lv_txt.h"
+#include "../lv_misc/lv_log.h"
 
 /*********************
  *      DEFINES
@@ -29,7 +33,6 @@
  **********************/
 static bool lv_img_design(lv_obj_t * img, const lv_area_t * mask, lv_design_mode_t mode);
 static lv_res_t lv_img_signal(lv_obj_t * img, lv_signal_t sign, void * param);
-static bool lv_img_is_symbol(const char * txt);
 
 /**********************
  *  STATIC VARIABLES
@@ -50,131 +53,139 @@ static lv_signal_func_t ancestor_signal;
  * @param copy pointer to a image object, if not NULL then the new object will be copied from it
  * @return pointer to the created image
  */
-lv_obj_t * lv_img_create(lv_obj_t * par, lv_obj_t * copy)
+lv_obj_t * lv_img_create(lv_obj_t * par, const lv_obj_t * copy)
 {
+    LV_LOG_TRACE("image create started");
+
     lv_obj_t * new_img = NULL;
-    
+
     /*Create a basic object*/
     new_img = lv_obj_create(par, copy);
     lv_mem_assert(new_img);
+    if(new_img == NULL) return NULL;
+
     if(ancestor_signal == NULL) ancestor_signal = lv_obj_get_signal_func(new_img);
-    
+
     /*Extend the basic object to image object*/
     lv_img_ext_t * ext = lv_obj_allocate_ext_attr(new_img, sizeof(lv_img_ext_t));
     lv_mem_assert(ext);
-    ext->fn = NULL;
+    if(ext == NULL) return NULL;
+
+    ext->src = NULL;
+    ext->src_type = LV_IMG_SRC_UNKNOWN;
+    ext->cf = LV_IMG_CF_UNKOWN;
     ext->w = lv_obj_get_width(new_img);
     ext->h = lv_obj_get_height(new_img);
-    ext->transp = 0;
-    ext->upscale = 0;
     ext->auto_size = 1;
 
-    /*Init the new object*/    
+    /*Init the new object*/
     lv_obj_set_signal_func(new_img, lv_img_signal);
     lv_obj_set_design_func(new_img, lv_img_design);
-    
+
     if(copy == NULL) {
-		/* Enable auto size for non screens
-		 * because image screens are wallpapers
-		 * and must be screen sized*/
-		if(par != NULL) ext->auto_size = 1;
-		else ext->auto_size = 0;
-		if(par != NULL) lv_obj_set_style(new_img, NULL);            /*Inherit the style  by default*/
-		else lv_obj_set_style(new_img, &lv_style_plain);            /*Set a style for screens*/
+        lv_obj_set_click(new_img, false);
+        /* Enable auto size for non screens
+         * because image screens are wallpapers
+         * and must be screen sized*/
+        if(par != NULL) {
+            ext->auto_size = 1;
+            lv_obj_set_style(new_img, NULL);                        /*Inherit the style  by default*/
+        } else {
+            ext->auto_size = 0;
+            lv_obj_set_style(new_img, &lv_style_plain);            /*Set a style for screens*/
+        }
     } else {
         lv_img_ext_t * copy_ext = lv_obj_get_ext_attr(copy);
-    	ext->auto_size = copy_ext->auto_size;
-        ext->upscale = copy_ext->upscale;
-    	lv_img_set_file(new_img, copy_ext->fn);
+        ext->auto_size = copy_ext->auto_size;
+        lv_img_set_src(new_img, copy_ext->src);
 
         /*Refresh the style with new signal function*/
         lv_obj_refresh_style(new_img);
     }
 
+
+    LV_LOG_INFO("image created");
+
     return new_img;
 }
 
-/**
- * Create a file to the RAMFS from a picture data
- * @param fn file name of the new file (e.g. "pic1", will be available at "U:/pic1")
- * @param data pointer to a color map with lv_img_raw_header_t header
- * @return result of the file operation. LV_FS_RES_OK or any error from lv_fs_res_t
- */
-lv_fs_res_t lv_img_create_file(const char * fn, const lv_color_int_t * data)
-{
-	const lv_img_raw_header_t * raw_p = (lv_img_raw_header_t *) data;
-	lv_fs_res_t res;
-	res = lv_ufs_create_const(fn, data, raw_p->w * raw_p->h * sizeof(lv_color_t) + sizeof(lv_img_raw_header_t));
-
-	return res;
-}
 
 /*=====================
- * Setter functions 
+ * Setter functions
  *====================*/
 
+
 /**
- * Set a file to the image
+ * Set the pixel map to display by the image
  * @param img pointer to an image object
- * @param fn file name in the RAMFS to set as picture (e.g. "U:/pic1"). 
+ * @param data the image data
  */
-void lv_img_set_file(lv_obj_t * img, const char * fn)
+void lv_img_set_src(lv_obj_t * img, const void * src_img)
 {
+    lv_img_src_t src_type = lv_img_src_get_type(src_img);
     lv_img_ext_t * ext = lv_obj_get_ext_attr(img);
-    
-    /*Handle normal images*/
-	if(lv_img_is_symbol(fn) == false) {
-        lv_fs_file_t file;
-        lv_fs_res_t res;
-        lv_img_raw_header_t header;
-        uint32_t rn;
-        res = lv_fs_open(&file, fn, LV_FS_MODE_RD);
-        if(res == LV_FS_RES_OK) {
-            res = lv_fs_read(&file, &header, sizeof(header), &rn);
-        }
 
-        /*Create a dummy header on fs error*/
-        if(res != LV_FS_RES_OK || rn != sizeof(header)) {
-            header.w = lv_obj_get_width(img);
-            header.h = lv_obj_get_height(img);
-            header.transp = 0;
-            header.cd = 0;
-        }
-
-        lv_fs_close(&file);
-
-        ext->w = header.w;
-        ext->h = header.h;
-        ext->transp = header.transp;
-#if LV_ANTIALIAS
-        if(ext->upscale == false) {
-            ext->w = ext->w >> LV_AA;
-            ext->h = ext->h >> LV_AA;
-        }
+#if LV_LOG_LEVEL >= LV_LOG_LEVEL_INFO
+    switch(src_type) {
+        case LV_IMG_SRC_FILE:
+            LV_LOG_TRACE("lv_img_set_src: `LV_IMG_SRC_FILE` type found");
+            break;
+        case LV_IMG_SRC_VARIABLE:
+            LV_LOG_TRACE("lv_img_set_src: `LV_IMG_SRC_VARIABLE` type found");
+            break;
+        case LV_IMG_SRC_SYMBOL:
+            LV_LOG_TRACE("lv_img_set_src: `LV_IMG_SRC_SYMBOL` type found");
+            break;
+        default:
+            LV_LOG_WARN("lv_img_set_src: unknown type");
+    }
 #endif
-	}
-	/*Handle symbol texts*/
-	else {
-        lv_style_t * style = lv_obj_get_style(img);
+
+    /*If the new source type is unknown free the memories of the old source*/
+    if(src_type == LV_IMG_SRC_UNKNOWN) {
+        LV_LOG_WARN("lv_img_set_src: unknown image type");
+        if(ext->src_type == LV_IMG_SRC_SYMBOL || ext->src_type == LV_IMG_SRC_FILE) {
+            lv_mem_free(ext->src);
+        }
+        ext->src = NULL;
+        ext->src_type = LV_IMG_SRC_UNKNOWN;
+        return;
+    }
+
+    lv_img_header_t header;
+    lv_img_dsc_get_info(src_img, &header);
+
+    /*Save the source*/
+    if(src_type == LV_IMG_SRC_VARIABLE) {
+        LV_LOG_INFO("lv_img_set_src:  `LV_IMG_SRC_VARIABLE` type found");
+        ext->src = src_img;
+    } else if(src_type == LV_IMG_SRC_FILE || src_type == LV_IMG_SRC_SYMBOL) {
+
+
+        /* If the new and the old src are the same then it was only a refresh.*/
+        if(ext->src != src_img) {
+            lv_mem_free(ext->src);
+            char * new_str = lv_mem_alloc(strlen(src_img) + 1);
+            lv_mem_assert(new_str);
+            if(new_str == NULL) return;
+            strcpy(new_str, src_img);
+            ext->src = new_str;
+        }
+    }
+
+    if(src_type == LV_IMG_SRC_SYMBOL) {
+        /*`lv_img_dsc_get_info` couldn't set the with and height of a font so set it here*/
+        lv_style_t * style = lv_img_get_style(img);
         lv_point_t size;
-        lv_txt_get_size(&size, fn, style->text.font, style->text.letter_space, style->text.line_space, LV_COORD_MAX, LV_TXT_FLAG_NONE);
-        ext->w = size.x;
-        ext->h = size.y;
-        ext->transp = 1;    /*Symbols always have transparent parts*/
-	}
+        lv_txt_get_size(&size, src_img, style->text.font, style->text.letter_space, style->text.line_space, LV_COORD_MAX, LV_TXT_FLAG_NONE);
+        header.w = size.x;
+        header.h = size.y;
+    }
 
-	if(fn != NULL) {
-	    /* Don't refresh if set the the current 'fn'
-	     * 'lv_mem_realloc' first allocates a new mem and then frees the old
-	     * in this case it would free itself so it wouldn't be anything to 'strcpy' */
-	    if(ext->fn != fn) {
-            ext->fn = lv_mem_realloc(ext->fn, strlen(fn) + 1);
-            strcpy(ext->fn, fn);
-	    }
-	} else {
-		ext->fn = NULL;
-	}
-
+    ext->src_type = src_type;
+    ext->w = header.w;
+    ext->h = header.h;
+    ext->cf = header.cf;
 
     if(lv_img_get_auto_size(img) != false) {
         lv_obj_set_size(img, ext->w, ext->h);
@@ -196,41 +207,35 @@ void lv_img_set_auto_size(lv_obj_t * img, bool autosize_en)
     ext->auto_size = (autosize_en == false ? 0 : 1);
 }
 
-/**
- * Enable the upscaling if LV_ANTIALIAS is enabled.
- * If enabled the object size will be same as the picture size.
- * @param img pointer to an image
- * @param upscale_en true: upscale enable, false: upscale disable
- */
-void lv_img_set_upscale(lv_obj_t * img, bool upscale_en)
-{
-    lv_img_ext_t * ext = lv_obj_get_ext_attr(img);
-    
-    /*Upscale works only if antialiassing is enabled*/
-#if LV_ANTIALIAS == 0
-    upscale_en = false;
-#endif
-    ext->upscale = (upscale_en == false ? 0 : 1);
-
-    /*Refresh the image with the new size*/
-    lv_img_set_file(img, ext->fn);
-}
 
 /*=====================
- * Getter functions 
+ * Getter functions
  *====================*/
 
+
+/**
+ * Get the source of the image
+ * @param img pointer to an image object
+ * @return the image source (symbol, file name or C array)
+ */
+const void * lv_img_get_src(lv_obj_t * img)
+{
+    lv_img_ext_t * ext = lv_obj_get_ext_attr(img);
+
+    return ext->src;
+}
 
 /**
  * Get the name of the file set for an image
  * @param img pointer to an image
  * @return file name
  */
-const char * lv_img_get_file_name(lv_obj_t * img)
+const char * lv_img_get_file_name(const lv_obj_t * img)
 {
     lv_img_ext_t * ext = lv_obj_get_ext_attr(img);
 
-    return ext->fn;
+    if(ext->src_type == LV_IMG_SRC_FILE) return ext->src;
+    else return "";
 }
 
 
@@ -239,23 +244,11 @@ const char * lv_img_get_file_name(lv_obj_t * img)
  * @param img pointer to an image
  * @return true: auto size is enabled, false: auto size is disabled
  */
-bool lv_img_get_auto_size(lv_obj_t * img)
+bool lv_img_get_auto_size(const lv_obj_t * img)
 {
     lv_img_ext_t * ext = lv_obj_get_ext_attr(img);
 
     return ext->auto_size == 0 ? false : true;
-}
-
-/**
- * Get the upscale enable attribute
- * @param img pointer to an image
- * @return true: upscale is enabled, false: upscale is disabled
- */
-bool lv_img_get_upscale(lv_obj_t * img)
-{
-    lv_img_ext_t * ext = lv_obj_get_ext_attr(img);
-
-    return ext->upscale == 0 ? false : true;
 }
 
 /**********************
@@ -270,7 +263,7 @@ bool lv_img_get_upscale(lv_obj_t * img)
  *                                  (return 'true' if yes)
  *             LV_DESIGN_DRAW: draw the object (always return 'true')
  *             LV_DESIGN_DRAW_POST: drawing after every children are drawn
- * @param return true/false, depends on 'mode'        
+ * @param return true/false, depends on 'mode'
  */
 static bool lv_img_design(lv_obj_t * img, const lv_area_t * mask, lv_design_mode_t mode)
 {
@@ -279,39 +272,48 @@ static bool lv_img_design(lv_obj_t * img, const lv_area_t * mask, lv_design_mode
 
     if(mode == LV_DESIGN_COVER_CHK) {
         bool cover = false;
-        if(ext->transp == 0) cover = lv_area_is_in(mask, &img->coords);
-        return cover;
+        if(ext->src_type == LV_IMG_SRC_UNKNOWN || ext->src_type == LV_IMG_SRC_SYMBOL) return false;
 
+        if(ext->cf == LV_IMG_CF_TRUE_COLOR || ext->cf == LV_IMG_CF_RAW) cover = lv_area_is_in(mask, &img->coords);
+
+        return cover;
     } else if(mode == LV_DESIGN_DRAW_MAIN) {
         if(ext->h == 0 || ext->w == 0) return true;
-		lv_area_t cords;
-/*Create a default style for symbol texts*/
-        bool sym = lv_img_is_symbol(ext->fn);
+        lv_area_t coords;
+        lv_opa_t opa_scale = lv_obj_get_opa_scale(img);
 
-		lv_obj_get_coords(img, &cords);
+        lv_obj_get_coords(img, &coords);
 
-		lv_area_t cords_tmp;
-		cords_tmp.y1 = cords.y1;
-		cords_tmp.y2 = cords.y1 + ext->h - 1;
+        if(ext->src_type == LV_IMG_SRC_FILE || ext->src_type == LV_IMG_SRC_VARIABLE) {
+            LV_LOG_TRACE("lv_img_design: start to draw image");
+            lv_area_t cords_tmp;
+            cords_tmp.y1 = coords.y1;
+            cords_tmp.y2 = coords.y1 + ext->h - 1;
 
-		for(; cords_tmp.y1 < cords.y2; cords_tmp.y1 += ext->h, cords_tmp.y2 += ext->h) {
-			cords_tmp.x1 = cords.x1;
-			cords_tmp.x2 = cords.x1 + ext->w - 1;
-			for(; cords_tmp.x1 < cords.x2; cords_tmp.x1 += ext->w, cords_tmp.x2 += ext->w) {
-			    if(sym == false) lv_draw_img(&cords_tmp, mask, style, ext->fn);
-			    else lv_draw_label(&cords_tmp, mask, style, ext->fn, LV_TXT_FLAG_NONE, NULL);
-
-			}
-		}
+            for(; cords_tmp.y1 < coords.y2; cords_tmp.y1 += ext->h, cords_tmp.y2 += ext->h) {
+                cords_tmp.x1 = coords.x1;
+                cords_tmp.x2 = coords.x1 + ext->w - 1;
+                for(; cords_tmp.x1 < coords.x2; cords_tmp.x1 += ext->w, cords_tmp.x2 += ext->w) {
+                    lv_draw_img(&cords_tmp, mask, ext->src, style, opa_scale);
+                }
+            }
+        } else if(ext->src_type == LV_IMG_SRC_SYMBOL) {
+            LV_LOG_TRACE("lv_img_design: start to draw symbol");
+            lv_draw_label(&coords, mask, style, opa_scale, ext->src, LV_TXT_FLAG_NONE, NULL);
+        } else {
+            /*Trigger the error handler of image drawer*/
+            LV_LOG_WARN("lv_img_design: image source type is unknown");
+            lv_draw_img(&img->coords, mask, NULL, style, opa_scale);
+        }
     }
-    
+
     return true;
 }
 
 
 /**
  * Signal function of the image
- * @param img pointer to animage object
+ * @param img pointer to an image object
  * @param sign a signal type from lv_signal_t enum
  * @param param pointer to a signal specific variable
  * @return LV_RES_OK: the object is not deleted in the function; LV_RES_INV: the object is deleted
@@ -326,36 +328,27 @@ static lv_res_t lv_img_signal(lv_obj_t * img, lv_signal_t sign, void * param)
 
     lv_img_ext_t * ext = lv_obj_get_ext_attr(img);
     if(sign == LV_SIGNAL_CLEANUP) {
-        lv_mem_free(ext->fn);
-    }
-    else if(sign == LV_SIGNAL_STYLE_CHG) {
-        /*Refresh the file name to refresh the symbol text size*/
-        if(lv_img_is_symbol(ext->fn) != false) {
-            lv_img_set_file(img, ext->fn);
+        if(ext->src_type == LV_IMG_SRC_FILE || ext->src_type == LV_IMG_SRC_SYMBOL) {
+            lv_mem_free(ext->src);
+            ext->src = NULL;
+            ext->src_type = LV_IMG_SRC_UNKNOWN;
         }
+    } else if(sign == LV_SIGNAL_STYLE_CHG) {
+        /*Refresh the file name to refresh the symbol text size*/
+        if(ext->src_type == LV_IMG_SRC_SYMBOL) {
+            lv_img_set_src(img, ext->src);
+
+        }
+    } else if(sign == LV_SIGNAL_GET_TYPE) {
+        lv_obj_type_t * buf = param;
+        uint8_t i;
+        for(i = 0; i < LV_MAX_ANCESTOR_NUM - 1; i++) {  /*Find the last set data*/
+            if(buf->type[i] == NULL) break;
+        }
+        buf->type[i] = "lv_img";
     }
 
     return res;
 }
-
-
-/**
- * From the settings in lv_conf.h and the file name
- * tells it a filename or a symbol text.
- * @param txt a file name (e.g. "U:/file1") or a symbol (e.g. SYMBOL_OK)
- * @return true: 'txt' is a symbol text, false: 'txt' is a file name
- */
-static bool lv_img_is_symbol(const char * txt)
-{
-    if(txt == NULL) return false;
-
-    /* if txt begins with an upper case letter then it refers to a driver
-     * so it is a file name*/
-    if(txt[0] >= 'A' && txt[0] <= 'Z') return false;
-
-    /*If not returned during the above tests then consider as text*/
-    return true;
-}
-
 
 #endif

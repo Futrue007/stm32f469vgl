@@ -49,9 +49,9 @@
 #include <stdio.h> 
 #include "bsp_uart.h"
 
-#include "lv_examples/lv_tests/lv_test_theme/lv_test_theme.h"
-#include "lv_examples/lv_apps/demo/demo.h"
-#include "lvgl/lvgl.h"
+#include "lv_test_theme.h"
+#include "demo.h"
+#include "lvgl.h"
 
 
 /* Private function prototypes -----------------------------------------------*/

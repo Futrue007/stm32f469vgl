@@ -13,6 +13,15 @@ extern "C" {
 /*********************
  *      INCLUDES
  *********************/
+#ifdef LV_CONF_INCLUDE_SIMPLE
+#include "lvgl.h"
+#include "lv_ex_conf.h"
+#else
+#include "../../../lvgl/lvgl.h"
+#include "../../../lv_ex_conf.h"
+#endif
+
+#if USE_LV_TUTORIALS
 
 /*********************
  *      DEFINES
@@ -25,11 +34,13 @@ extern "C" {
 /**********************
  * GLOBAL PROTOTYPES
  **********************/
-void ex_hello_world(void);
+void lv_tutorial_hello_world(void);
 
 /**********************
  *      MACROS
  **********************/
+
+#endif /*USE_LV_TUTORIALS*/
 
 #ifdef __cplusplus
 } /* extern "C" */

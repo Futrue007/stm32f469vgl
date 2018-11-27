@@ -1,17 +1,17 @@
 /**
  * @file lv_vdb.c
- * 
+ *
  */
-#include "../../lv_conf.h"
-#if LV_VDB_SIZE != 0
-
-#include "../lv_hal/lv_hal_disp.h"
-#include <stddef.h>
-#include "lv_vdb.h"
 
 /*********************
  *      INCLUDES
  *********************/
+#include "lv_vdb.h"
+#if LV_VDB_SIZE != 0
+
+#include "../lv_hal/lv_hal_disp.h"
+#include "../lv_misc/lv_log.h"
+#include <stddef.h>
 
 /*********************
  *      DEFINES
@@ -20,11 +20,12 @@
 /**********************
  *      TYPEDEFS
  **********************/
-typedef enum {
-    LV_VDB_STATE_FREE = 0,
-    LV_VDB_STATE_ACTIVE,
-    LV_VDB_STATE_FLUSH,
-} lv_vdb_state_t;
+enum {
+    LV_VDB_STATE_FREE = 0,      /*Not used*/
+    LV_VDB_STATE_ACTIVE,        /*Being used to render*/
+    LV_VDB_STATE_FLUSH,         /*Flushing pixels from it*/
+};
+typedef uint8_t lv_vdb_state_t;
 
 /**********************
  *  STATIC PROTOTYPES
@@ -34,29 +35,28 @@ typedef enum {
  *  STATIC VARIABLES
  **********************/
 
-
 #if LV_VDB_DOUBLE == 0
-   /*Simple VDB*/
-   static volatile lv_vdb_state_t vdb_state = LV_VDB_STATE_ACTIVE;
+/*Simple VDB*/
+static volatile lv_vdb_state_t vdb_state = LV_VDB_STATE_ACTIVE;
 #  if LV_VDB_ADR == 0
-     /*If the buffer address is not specified  simply allocate it*/
-     static lv_color_t vdb_buf[LV_VDB_SIZE];
-     static lv_vdb_t vdb = {.buf = vdb_buf};
-#  else
-     /*If the buffer address is specified use that address*/
-     static lv_vdb_t vdb = {.buf = (lv_color_t *)LV_VDB_ADR};
+/*If the buffer address is not specified  simply allocate it*/
+static uint8_t vdb_buf[LV_VDB_SIZE_IN_BYTES];
+static lv_vdb_t vdb = {.buf = (lv_color_t *)vdb_buf};
+#  else     /*LV_VDB_ADR != 0*/
+/*If the buffer address is specified use that address*/
+static lv_vdb_t vdb = {.buf = (lv_color_t *)LV_VDB_ADR};
 #  endif
-#else
-   /*Double VDB*/
-   static volatile lv_vdb_state_t vdb_state[2] = {LV_VDB_STATE_FREE, LV_VDB_STATE_FREE};
+#else       /*LV_VDB_DOUBLE != 0*/
+/*Double VDB*/
+static volatile lv_vdb_state_t vdb_state[2] = {LV_VDB_STATE_FREE, LV_VDB_STATE_FREE};
 #  if LV_VDB_ADR == 0
-   /*If the buffer address is not specified  simply allocate it*/
-   static lv_color_t vdb_buf1[LV_VDB_SIZE];
-   static lv_color_t vdb_buf2[LV_VDB_SIZE];
-   static lv_vdb_t vdb[2] = {{.buf = vdb_buf1}, {.buf = vdb_buf2}};
-#  else
-   /*If the buffer address is specified use that address*/
-   static lv_vdb_t vdb[2] = {{.buf = (lv_color_t *)LV_VDB_ADR}, {.buf = (lv_color_t *)LV_VDB2_ADR}};
+/*If the buffer address is not specified  simply allocate it*/
+static uint8_t vdb_buf1[LV_VDB_SIZE_IN_BYTES];
+static uint8_t vdb_buf2[LV_VDB_SIZE_IN_BYTES];
+static lv_vdb_t vdb[2] = {{.buf = (lv_color_t *) vdb_buf1}, {.buf = (lv_color_t *) vdb_buf2}};
+#  else /*LV_VDB_ADR != 0*/
+/*If the buffer address is specified use that address*/
+static lv_vdb_t vdb[2] = {{.buf = (lv_color_t *)LV_VDB_ADR}, {.buf = (lv_color_t *)LV_VDB2_ADR}};
 #  endif
 #endif
 
@@ -78,6 +78,11 @@ lv_vdb_t * lv_vdb_get(void)
     /* Wait until VDB become ACTIVE from FLUSH by the
      * user call of 'lv_flush_ready()' in display drivers's flush function*/
     while(vdb_state != LV_VDB_STATE_ACTIVE);
+
+    if(vdb.buf == (void *)LV_VDB_ADR_INV) {
+        LV_LOG_ERROR("VDB address is invalid. Use `lv_vdb_set_adr` to set a valid address or use LV_VDB_ADR = 0 in lv_conf.h");
+        return NULL;
+    }
     return &vdb;
 #else
     /*If already there is an active do nothing*/
@@ -105,8 +110,10 @@ lv_vdb_t * lv_vdb_get(void)
 void lv_vdb_flush(void)
 {
     lv_vdb_t * vdb_act = lv_vdb_get();
-    if(vdb_act == NULL) return;
-
+    if(!vdb_act) {
+        LV_LOG_WARN("Invalid VDB pointer");
+        return;
+    }
 #if LV_VDB_DOUBLE == 0
     vdb_state = LV_VDB_STATE_FLUSH;     /*User call to 'lv_flush_ready()' will set to ACTIVE 'disp_flush'*/
 #else
@@ -119,58 +126,26 @@ void lv_vdb_flush(void)
     if(vdb_state[1] == LV_VDB_STATE_ACTIVE) vdb_state[1] = LV_VDB_STATE_FLUSH;
 #endif
 
-#if LV_ANTIALIAS == 0
-	lv_disp_flush(vdb_act->area.x1, vdb_act->area.y1, vdb_act->area.x2, vdb_act->area.y2, vdb_act->buf);
-#else
-	/* Get the average of 2x2 pixels and put the result back to the VDB
-	 * The reading goes much faster then the write back
-	 * so useful data won't be overwritten
-	 * Example:
-	 * -----------------------------
-	 * in1_buf  |2,2|6,8|      3,7
-	 * in2_buf  |4,4|7,7|      1,2
-	 *          ---------  ==>
-	 * in1_buf  |1,1|1,3|
-	 * in2_buf  |1,1|1,3|
-	 * */
-	lv_coord_t x;
-	lv_coord_t y;
-	lv_coord_t w = lv_area_get_width(&vdb_act->area);
-	lv_color_t * in1_buf = vdb_act->buf;      /*Pointer to the first row*/
-    lv_color_t * in2_buf = vdb_act->buf + w;  /*Pointer to the second row*/
-    lv_color_t * out_buf = vdb_act->buf;      /*Store the result here*/
-	for(y = vdb_act->area.y1; y < vdb_act->area.y2; y += 2) {
-        for(x = vdb_act->area.x1; x < vdb_act->area.x2; x += 2) {
-        
-            /*If the pixels are the same do not calculate the average */
-            if(in1_buf->full == (in1_buf + 1)->full &&
-               in1_buf->full == in2_buf->full &&
-               in1_buf->full == (in2_buf + 1)->full) {
-                out_buf->full = in1_buf->full;
-            } else {
-                /*Get the average of 2x2 red*/
-                out_buf->red = (in1_buf->red + (in1_buf + 1)->red +
-                                in2_buf->red + (in2_buf+ 1)->red) >> 2;
-                /*Get the average of 2x2 green*/
-                out_buf->green = (in1_buf->green + (in1_buf + 1)->green +
-                                  in2_buf->green + (in2_buf + 1)->green) >> 2;
-                /*Get the average of 2x2 blue*/
-                out_buf->blue = (in1_buf->blue + (in1_buf + 1)->blue +
-                                 in2_buf->blue + (in2_buf + 1)->blue) >> 2;
-            }
-            
-			in1_buf += 2; /*Skip the next pixel because it is already used above*/
-            in2_buf += 2;
-			out_buf ++;
-		}
-		/*2 row is ready so go the next 2*/
-		in1_buf += w; /*Skip the next row because it is processed from in2_buf*/
-        in2_buf += w;
-	}
+    /*Flush the rendered content to the display*/
+    lv_disp_flush(vdb_act->area.x1, vdb_act->area.y1, vdb_act->area.x2, vdb_act->area.y2, vdb_act->buf);
 
-	/* Now the full the VDB is filtered and the result is stored in the first quarter of it
-	 * Write out the filtered map to the display*/
-	lv_disp_flush(vdb_act->area.x1 >> 1, vdb_act->area.y1 >> 1, vdb_act->area.x2 >> 1, vdb_act->area.y2 >> 1, vdb_act->buf);
+}
+
+
+/**
+ * Set the address of VDB buffer(s) manually. To use this set `LV_VDB_ADR` (and `LV_VDB2_ADR`) to `LV_VDB_ADR_INV` in `lv_conf.h`.
+ * It should be called before `lv_init()`. The size of the buffer should be: `LV_VDB_SIZE_IN_BYTES`
+ * @param buf1 address of the VDB.
+ * @param buf2 address of the second buffer. `NULL` if `LV_VDB_DOUBLE  0`
+ */
+void lv_vdb_set_adr(void * buf1, void * buf2)
+{
+#if LV_VDB_DOUBLE == 0
+    (void) buf2;   /*unused*/
+    vdb.buf = buf1;
+#else
+    vdb[0].buf = buf1;
+    vdb[1].buf = buf2;
 #endif
 }
 
@@ -181,9 +156,24 @@ void lv_flush_ready(void)
 {
 #if LV_VDB_DOUBLE == 0
     vdb_state = LV_VDB_STATE_ACTIVE;
+
+#if LV_COLOR_SCREEN_TRANSP
+    memset(vdb_buf, 0x00, LV_VDB_SIZE_IN_BYTES);
+#endif
+
 #else
-    if(vdb_state[0] == LV_VDB_STATE_FLUSH)  vdb_state[0] = LV_VDB_STATE_FREE;
-    if(vdb_state[1] == LV_VDB_STATE_FLUSH)  vdb_state[1] = LV_VDB_STATE_FREE;
+    if(vdb_state[0] == LV_VDB_STATE_FLUSH) {
+#if LV_COLOR_SCREEN_TRANSP
+        memset(vdb_buf[0], 0x00, LV_VDB_SIZE_IN_BYTES);
+#endif
+        vdb_state[0] = LV_VDB_STATE_FREE;
+    }
+    if(vdb_state[1] == LV_VDB_STATE_FLUSH) {
+#if LV_COLOR_SCREEN_TRANSP
+        memset(vdb_buf[1], 0x00, LV_VDB_SIZE_IN_BYTES);
+#endif
+        vdb_state[1] = LV_VDB_STATE_FREE;
+    }
 #endif
 }
 

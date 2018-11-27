@@ -13,12 +13,20 @@ extern "C" {
 /*********************
  *      INCLUDES
  *********************/
+#ifdef LV_CONF_INCLUDE_SIMPLE
+#include "lv_conf.h"
+#else
+#include "../../lv_conf.h"
+#endif
 #include <stdint.h>
 #include <stdbool.h>
 
 /*********************
  *      DEFINES
  *********************/
+#ifndef LV_ATTRIBUTE_TICK_INC
+#define LV_ATTRIBUTE_TICK_INC
+#endif
 
 /**********************
  *      TYPEDEFS
@@ -32,7 +40,7 @@ extern "C" {
  * You have to call this function periodically
  * @param tick_period the call period of this function in milliseconds
  */
-void lv_tick_inc(uint32_t tick_period);
+LV_ATTRIBUTE_TICK_INC void lv_tick_inc(uint32_t tick_period);
 
 /**
  * Get the elapsed milliseconds since start up

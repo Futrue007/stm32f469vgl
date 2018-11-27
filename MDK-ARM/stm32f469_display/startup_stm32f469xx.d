@@ -1,1 +1,0 @@
-lcd_dsi_imagesslider\startup_stm32f469xx.o: startup_stm32f469xx.s
