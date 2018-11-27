@@ -151,6 +151,9 @@ lv_indev_t * lv_indev_next(lv_indev_t * indev);
  */
 bool lv_indev_read(lv_indev_t * indev, lv_indev_data_t *data);
 
+void touchpad_init(void);
+bool touchpad_read(lv_indev_data_t *data);
+
 /**********************
  *      MACROS
  **********************/

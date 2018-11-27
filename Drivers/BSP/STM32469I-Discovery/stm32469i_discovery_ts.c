@@ -144,12 +144,10 @@ char * ts_gesture_id_string_tab[GEST_ID_NB_MAX] = { "None",
 /** @defgroup STM32469I-Discovery_TS_Private_Function_Prototypes STM32469I Discovery TS Private Function Prototypes
   * @{
   */
-static bool touchpad_read(lv_indev_data_t *data);
+//static bool touchpad_read(lv_indev_data_t *data);
 
-/**********************
- *  STATIC VARIABLES
- **********************/
-static TS_StateTypeDef  TS_State;
+
+
 /**
   * @}
   */
@@ -463,51 +461,7 @@ __weak void BSP_TS_INT_MspInit(void)
 }
 
 
-/**
- * Initialize your input devices here
- */
-void touchpad_init(void)
-{
-  BSP_TS_Init(OTM8009A_800X480_WIDTH, OTM8009A_800X480_HEIGHT);
 
-  lv_indev_drv_t indev_drv;
-  lv_indev_drv_init(&indev_drv);
-  indev_drv.read = touchpad_read;
-  indev_drv.type = LV_INDEV_TYPE_POINTER;
-  lv_indev_drv_register(&indev_drv);
-}
-
-/**********************
- *   STATIC FUNCTIONS
- **********************/
-static TS_StateTypeDef  TS_State;
-/**
- * Read an input device
- * @param indev_id id of the input device to read
- * @param x put the x coordinate here
- * @param y put the y coordinate here
- * @return true: the device is pressed, false: released
- */
-static bool touchpad_read(lv_indev_data_t *data)
-{
-	static int16_t last_x = 0;
-	static int16_t last_y = 0;
-
-	BSP_TS_GetState(&TS_State);
-	if(TS_State.touchDetected != 0) {
-		data->point.x = TS_State.touchX[0];
-		data->point.y = TS_State.touchY[0];
-		last_x = data->point.x;
-		last_y = data->point.y;
-		data->state = LV_INDEV_STATE_PR;
-	} else {
-		data->point.x = last_x;
-		data->point.y = last_y;
-		data->state = LV_INDEV_STATE_REL;
-	}
-
-	return false;
-}
 
 /**
   * @}

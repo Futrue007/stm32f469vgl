@@ -10,7 +10,7 @@
  *********************/
 #include "../lv_hal/lv_hal_indev.h"
 #include "../lv_misc/lv_mem.h"
-
+#include "stm32469i_discovery_ts.h"
 /*********************
  *      DEFINES
  *********************/
@@ -126,3 +126,52 @@ bool lv_indev_read(lv_indev_t * indev, lv_indev_data_t * data)
 /**********************
  *   STATIC FUNCTIONS
  **********************/
+
+ /**
+  * Initialize your input devices here
+  */
+ void touchpad_init(void)
+ {
+   BSP_TS_Init(800, 480);
+ 
+   lv_indev_drv_t indev_drv;
+   lv_indev_drv_init(&indev_drv);
+   indev_drv.read = touchpad_read;
+   indev_drv.type = LV_INDEV_TYPE_POINTER;
+   lv_indev_drv_register(&indev_drv);
+ }
+ 
+ /**********************
+  *   STATIC FUNCTIONS
+  **********************/
+ static TS_StateTypeDef  TS_State;
+ /**
+  * Read an input device
+  * @param indev_id id of the input device to read
+  * @param x put the x coordinate here
+  * @param y put the y coordinate here
+  * @return true: the device is pressed, false: released
+  */
+ bool touchpad_read(lv_indev_data_t *data)
+ {
+	 static int16_t last_x = 0;
+	 static int16_t last_y = 0;
+ 
+	 BSP_TS_GetState(&TS_State);
+	 if(TS_State.touchDetected != 0) {
+		 data->point.x = TS_State.touchX[0];
+		 data->point.y = TS_State.touchY[0];
+		 last_x = data->point.x;
+		 last_y = data->point.y;
+		 data->state = LV_INDEV_STATE_PR;
+	 } else {
+		 data->point.x = last_x;
+		 data->point.y = last_y;
+		 data->state = LV_INDEV_STATE_REL;
+	 }
+ 
+	 return false;
+ }
+
+ 
+
